@@ -1,56 +1,57 @@
-# Welcome to your Expo app 👋
+# IT 313_Maniscan_JellyQuen_ReactStateHooks
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Problem
 
-## Get started
+The lab instructor needs a small screen that students can use during laboratory sessions to track how many pratcice problem they have solved and how long how they been working. This project is an Expo app called _Lab Timer & Practice Tracker_.
 
-1. Install dependencies
+The screen has:
 
-   ```bash
-   npm install
-   ```
+- A counter showing "Solved: N" with **Solve +1** and **Reset** buttons
+- A "Great job!" message once the counter reaches 5
+- A stopwatch showing the elapsed time (mm:ss) with **Start** and **Stop** buttons
+- A "Running…" or "Paused" label that matches the stopwatch state
 
-2. Start the app
+## My Approach
 
-   ```bash
-   npx expo start
-   ```
+The app is split into small pieces, each with one job.
 
-In the output, you'll find options to open the app in a
+| File                                 | Purpose                                                                                                                                                                                                                   |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/hooks/useStopwatch.ts`          | Custom hook. Keeps `seconds` in state and uses `useEffect` with `setInterval` to add 1 every second while `isRunning` is true. Its cleanup function calls `clearInterval` when the timer stops or the component unmounts. |
+| `src/components/Stopwatch.tsx`       | Displays the formatted time. Uses conditional rendering to show "Running…" or "Paused".                                                                                                                                   |
+| `src/components/PracticeTracker.tsx` | Displays the solved count and the Solve +1 / Reset buttons. Uses conditional rendering to show "Great job!" when `solved` reaches 5.                                                                                      |
+| `src/components/LabScreen.tsx`       | Parent component. Owns the `solved` and `isRunning` state, calls `useStopwatch`, and passes data and handlers down as props.                                                                                              |
+| `src/app/index.tsx`                  | Entry point that renders `LabScreen`.                                                                                                                                                                                     |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+**Concepts used:**
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- **useState** for `solved`, `isRunning`, and `seconds`.
+- **Functional update** `setSolved(s => s + 1)` so the update always uses the latest value.
+- **useEffect with a dependency array** `[isRunning]` so the timer effect only re-runs when `isRunning` changes.
+- **Cleanup function** that clears the interval so timers do not pile up.
+- **Conditional rendering** with `&&` and a ternary.
+- **Lifting state up:** `PracticeTracker` and `Stopwatch` are siblings that stay in sync through their shared parent, `LabScreen`.
+- **Custom hook** `useStopwatch` to keep timer logic separate and reusable.
+- **Event handlers** are passed as function references (for example `onPress={handleSolve}`), never called directly in the JSX.
 
-## Get a fresh project
+## How to Run the App in Expo Go
 
-When you're ready, run:
+1. Install [Node.js](https://nodejs.org/).
+2. Install **Expo Go** on your phone from the App Store or Google Play.
+3. Open a terminal in the project folder and run:
 
 ```bash
-npm run reset-project
+   npm install
+   npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+4. Scan the QR code shown in the terminal:
+   - **iPhone:** use the Camera app.
+   - **Android:** use the scanner inside Expo Go.
+5. Make sure your phone and computer are on the **same Wi-Fi network**.
 
-### Other setup steps
+## Expected Behavior
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- On load: "Solved: 0", "00:00", "Paused", and all four buttons are visible.
+- Pressing Solve +1 five times shows "Great job!". Reset sets the counter to 0 and does not affect the timer.
+- Start begins counting up and shows "Running…". Stop freezes the timer and shows "Paused".
